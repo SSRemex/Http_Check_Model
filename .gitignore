@@ -2,6 +2,6 @@ data/
 venv/
 __pycache__/
 .idea/
-optimizer.pkl
-waf_model.pkl
-ps.pkl
+model/optimizer.pkl
+model/waf_model.pkl
+model/ps.pkl
