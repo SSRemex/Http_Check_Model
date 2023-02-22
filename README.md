@@ -1,36 +1,42 @@
-# 逻辑设计
-基于文本情感分析做的恶意http流量检测模型
-数据集来源真实业务数据
+# WEB恶意流量检测模型（第一版）
+> 基于文本情感分析做的恶意http流量检测模型，属于二分类问题 
+> 
+> 数据集来源真实业务数据
 
-## 格式化数据
-http流量如下
+
+## 模型使用
+下载release中的模型，放到`model`文件夹下
+针对单一流量检测，直接执行`main.py`文件即可
+
+## 文件说明
+### 训练数据文件格式
+```json
+{
+  "feature": "package",
+  "label": 0
+}
 ```
-POST /url?req=check&fanyi_src=%E6%B5%81%E9%87%8F1 HTTP/1.1
-Accept: */*
-Accept-Encoding: gzip, deflate, br
-Accept-Language: zh-CN,zh;q=0.9
-Connection: keep-alive
-Cookie: BIDUPSID=DCBD2AC4921B4E683CB82540B0E6D2A5; PSTM=1667703879; BAIDUID=DCBD2AC4921B4E6819D445CB33821547:FG=1; MCITY=-131%3A; APPGUIDE_10_0_2=1; REALTIME_TRANS_SWITCH=1; FANYI_WORD_SWITCH=1; HISTORY_SWITCH=1; SOUND_SPD_SWITCH=1; SOUND_PREFER_SWITCH=1; BDUSS=hpbjZqN1oxY0IzZUZBU0YyNDd4SDdxc21vckJsdXJ2RG1uUTB6aXBiSWdOWk5qRVFBQUFBJCQAAAAAAAAAAAEAAABfaw060vi~1bfJ0~AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACCoa2MgqGtjWl; BDUSS_BFESS=hpbjZqN1oxY0IzZUZBU0YyNDd4SDdxc21vckJsdXJ2RG1uUTB6aXBiSWdOWk5qRVFBQUFBJCQAAAAAAAAAAAEAAABfaw060vi~1bfJ0~AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACCoa2MgqGtjWl; BDORZ=B490B5EBF6F3CD402E515D22BCDA1598; newlogin=1; BA_HECTOR=8g812g840g8h81040ka48cs91ho92hl1f; ZFY=RWbWamNjGURQ8Zl1tX2GDafQr6qs0baYpbdmtt3C4YE:C; BAIDUID_BFESS=DCBD2AC4921B4E6819D445CB33821547:FG=1; delPer=0; PSINO=1; BAIDU_WISE_UID=wapp_1669630540247_159; __bid_n=18462511ecdc18eca54207; RT="z=1&dm=baidu.com&si=92779127-e000-4573-b527-7cd9fb982da2&ss=lb0mbkh0&sl=6&tt=41g&bcn=https%3A%2F%2Ffclog.baidu.com%2Flog%2Fweirwood%3Ftype%3Dperf&ld=3x51&ul=2be4f&hd=2be72"; BDRCVFR[feWj1Vr5u3D]=I67x6TjHwwYf0; Hm_lvt_64ecd82404c51e03dc91cb9e8c025574=1668180721,1668964542,1669542235,1669644116; Hm_lpvt_64ecd82404c51e03dc91cb9e8c025574=1669644116; ab_sr=1.0.1_MzE3NjMwMGEwYWFmNjYwYjU5MjUwNGUwMDlmMDEzOTQ0MDUyNjBkYjI2YjIxODljYmI2ZmFlNzc0N2FjMmVjNDRhMDRmMmJkMjQ2NTliYzE2NWI5YTBiNGM1MmY1OTU1MGVmNzMwYmNmMDhmMTA1ODllNTM2YmY1ZjhiMzhiMDU4ZGExYjM5Y2Q3MmJmMzMzOWU5N2RhMzhkYjI0ZmRkNTcyNTJlN2MzMTQ4ZjlmZWM2YTY4MWM2NmNmNGI3NmVl; H_PS_PSSID=36547_37771_37840_34812_36803_37836_37760_37851_26350_37791
-Host: fanyi.baidu.com
-Referer: https://fanyi.baidu.com/?aldtype=16047
-Sec-Fetch-Dest: empty
-Sec-Fetch-Mode: cors
-Sec-Fetch-Site: same-origin
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36
-X-Requested-With: XMLHttpRequest
-sec-ch-ua: "Google Chrome";v="107", "Chromium";v="107", "Not=A?Brand";v="24"
-sec-ch-ua-mobile: ?0
-sec-ch-ua-platform: "Windows"
+`feature` 为数据包，分为str和package类型，str类型无换行(\n), package有换行
 
+`label` 0为正常流量，1为恶意流量
 
-{"user":"aaa", "id": 1}
+应放在`./data/`文件夹下，该目录下应存在`train`，`test`两个目录用来存放训练集和测试集
 
-```
-格式化后数据
-```python
-content = "/ url ? req = check"
+### 语料处理
+`package_sequence.py` 是语料模型
 
-```
+`ps_save.py` 是语料处理
+> 准备好数据集之后，可以通过修改ps_save.py中的path路径，来进行语料映射模型的生成
 
-正常流量 label 0
-恶意流量 label 1
+### 数据集处理 
+`dataset.py` 文件
+
+### 流量预处理
+`data_process.py` 将流量进行预处理，删除一些无意义的字段
+
+### 流量检测
+`check.py` 提供了单一流量流量检测，以及目录批量检测两种方法
+
+### 模型训练
+`model.py` 创建了模型的类，以及训练和测试方法
+
