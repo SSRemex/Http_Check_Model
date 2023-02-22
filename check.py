@@ -8,13 +8,21 @@ import time
 
 
 # 传入模型
+start = time.time()
 model = WafCheckModel()
-model.load_state_dict(torch.load("waf_model.pkl"))
+model.load_state_dict(torch.load("model/waf_model.pkl"))
+end = time.time()
+print(f"模型加载时间：{end-start}")
 
 
 def one_package_check(package, mode="package"):
+    """
+    :param package: 待检测流量字段
+    :param mode: 数据包格式（换行） 字符串格式（无换行）
+    :return:
+    """
     # 分词处理
-    package_tokenize = package_format(package, mode="package")
+    package_tokenize = package_format(package, mode=mode)
     # print(package_tokenize)
     # 序列化
     package_transform = config.ps.transform(package_tokenize, max_len=config.MAX_LEN)
@@ -24,7 +32,6 @@ def one_package_check(package, mode="package"):
     # 查看结果
     label = model(package_transform)
     label = label.max(dim=-1)[-1]
-    print(label)
     if label.item() == 0:
         print("正常流量")
     else:
@@ -32,6 +39,11 @@ def one_package_check(package, mode="package"):
 
 
 def all_package_check(path):
+    """
+    对一个路径下的所有数据文件进行批量检测
+    :param path: 待检测文件路径
+    :return:
+    """
     print("开始检测")
     start = time.time()
     loss_list = []
@@ -56,8 +68,4 @@ def all_package_check(path):
     print(f"cost: {int(end - start)}")
 
 
-if __name__ == '__main__':
-    all_package_check(path="./data/灰度check训练集/train")
-    # package = "GET /?bid=ca5990264a164e1f9b3ea391deedac95&id=1+union+select+current+schema+from+sysibm.sysdummy1 HTTP/1.1             rm-pro-time:1670575793282             x-forwarded-for:42.187.174.228             x-scheme:https             x-real-ip:42.187.174.228             accept-encoding:gzip,deflate             host:appseccheck.58.com             x-forwarded-proto:https             https-tag:HTTPS             rm-pro-token:             rm-pro-businessid:ca5990264a164e1f9b3ea391deedac95             x-remote-port:54067             user-agent:curl/7.83.1"
-    # one_package_check(package=package, mode="str")
 
