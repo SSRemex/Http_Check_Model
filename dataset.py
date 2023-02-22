@@ -51,14 +51,3 @@ def get_dataloader(train=True, path=None):
 
     return dataloader
 
-
-if __name__ == '__main__':
-    data_loader = get_dataloader()
-
-    # for index, (feature, label) in enumerate(data_loader):
-    #     print(feature)
-    #     print(label)
-    #
-    #     break
-
-    print(len(data_loader))

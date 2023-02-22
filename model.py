@@ -9,9 +9,6 @@ import numpy
 from tqdm import tqdm
 
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-
 class WafCheckModel(torch.nn.Module):
     def __init__(self):
         super(WafCheckModel, self).__init__()
@@ -42,19 +39,19 @@ class WafCheckModel(torch.nn.Module):
         return torch.nn.functional.log_softmax(out, dim=-1)
 
 
-model = WafCheckModel().to(device)
+model = WafCheckModel().to(config.device)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 
-if os.path.exists("waf_model.pkl"):
-    model.load_state_dict(torch.load("waf_model.pkl"))
-    optimizer.load_state_dict(torch.load("optimizer.pkl"))
+if os.path.exists("model/waf_model.pkl"):
+    model.load_state_dict(torch.load("model/waf_model.pkl"))
+    optimizer.load_state_dict(torch.load("model/optimizer.pkl"))
 
 
 def train(epoch):
     data_loader = get_dataloader(train=True, path="./data/灰度check训练集/train")
     for index, (feature, label) in enumerate(data_loader):
-        feature = feature.to(device)
-        label = label.to(device)
+        feature = feature.to(config.device)
+        label = label.to(config.device)
 
         optimizer.zero_grad()
         pre_label = model(feature)
@@ -64,8 +61,8 @@ def train(epoch):
         optimizer.step()
         print(epoch, index, loss.item())
         if index % 100 == 1:
-            torch.save(model.state_dict(), "waf_model.pkl")
-            torch.save(optimizer.state_dict(), "optimizer.pkl")
+            torch.save(model.state_dict(), "model/waf_model.pkl")
+            torch.save(optimizer.state_dict(), "model/optimizer.pkl")
 
 
 def test():
@@ -73,8 +70,8 @@ def test():
     acc_list = []
     data_loader = get_dataloader(train=False)
     for index, (feature, label) in enumerate(data_loader):
-        feature = feature.to(device)
-        label = label.to(device)
+        feature = feature.to(config.device)
+        label = label.to(config.device)
         with torch.no_grad():
             pre_label = model(feature)
             cur_loss = torch.nn.functional.nll_loss(pre_label, label)
@@ -93,7 +90,6 @@ if __name__ == '__main__':
     start = time.time()
     for i in tqdm(range(100)):
          train(i)
-
 
     # test()
     end = time.time()
